@@ -19,7 +19,7 @@ describe('getCardImageUrl', function () {
     expect(getCardImageUrl({ point: 13, suit: 'diamonds' }))
           .toEqual('images/king_of_diamonds.png');
   });
-  
+
   it('should work for different suit', function() {
     expect(getCardImageUrl({ point: 1, suit: 'clubs' }))
       .toEqual('images/ace_of_clubs.png');
@@ -71,6 +71,18 @@ describe('calculatePoints', function () {
       { point: 1, suit: 'diamonds' },
       { point: 8, suit: 'diamonds' }
     ])).toEqual(18);
+    expect(calculatePoints([
+      { point: 1, suit: 'spades' },
+      { point: 5, suit: 'hearts' },
+      { point: 2, suit: 'clubs' },
+      { point: 6, suit: 'spades' }
+    ])).toEqual(14);
+    expect(calculatePoints([
+      { point: 1, suit: 'spades' },
+      { point: 1, suit: 'hearts' },
+      { point: 1, suit: 'clubs' },
+      { point: 1, suit: 'diamonds' }
+    ])).toEqual(14);
 
   });
 
