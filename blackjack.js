@@ -1,3 +1,13 @@
+var deck = newDeck();
+var dealt = true;
+var numOfCards = 52;
+var dealerCards = [];
+var playerCards =[];
+var playerScore = 0;
+var dealerScore = 0;
+var checkBust = true;
+var checkStand = false;
+
 function getCardImageUrl(card) {
   var faceCards = ['jack', 'queen', 'king'];
   if (card.point >= 2 && card.point <= 10) {
@@ -36,13 +46,16 @@ function calculatePoints(cards) {
   }
   minusAceArray = newArr.slice(0, (newArr.length - AceCount));
   AceArray = newArr.slice((newArr.length - AceCount), newArr.length);
-  minusAceSum = 0;
+  // minusAceSum = 0;
   AceSum = 0;
   for (var j = 0; j < minusAceArray.length; j++) {
     minusAceSum += minusAceArray[j].point;
   }
   if (AceCount === 4) {
     AceSum = 14;
+  }
+  if (minusAceSum < 10 && AceCount === 2) {
+    AceSum = 12;
   }
   if (minusAceSum <= 10 && AceArray.length === 1) {
     AceSum = 11;
@@ -55,25 +68,6 @@ function calculatePoints(cards) {
   cardSum = minusAceSum + AceSum;
 
   return cardSum;
-// Toby's solution to summing cards
- //  cards = cards.slice(0);
- //  cards.sort(function (a,b) {
- //     return b.point - a.point;
- //  });
- //
- //  var sum = cards.reduce(function (a, b) {
- //   if (b.point > 10) {
- //     b.point = 10;
- //   }
- //   if (b.point === 1 && a < 11) {
- //     b.point = 11;
- //   }
- //   return a + b.point;
- // }, 0);
- //
- // console.log(sum);
- //
- // return sum;
 }
 
 function newDeck() {
@@ -92,14 +86,18 @@ function getRandomInt(min, max) {
 }
 
 $(function() {
-  var deck = newDeck();
-  var dealt = true;
-  var numOfCards = 52;
-  var dealerCards = [];
-  var playerCards =[];
-  var playerScore = 0;
-  var dealerScore = 0;
-  var checkBust = true;
+  function newGame() {
+    deck = newDeck();
+    dealt = true;
+    numOfCards = 52;
+    dealerCards = [];
+    playerCards =[];
+    playerScore = 0;
+    dealerScore = 0;
+    checkBust = true;
+    checkStand = false;
+  }
+
 
   $("#deal-button").click(function () {
     if (dealt) {
@@ -141,7 +139,7 @@ $(function() {
   });
 
   $("#hit-button").click(function() {
-    if (checkBust === false) {
+    if (checkBust === false && checkStand === false) {
       var randNumPlayerHit = Math.floor(getRandomInt(0,numOfCards));
       $("#player-hand").append('<img class="card" src="' + getCardImageUrl(deck[randNumPlayerHit]) + '" />');
       playerCards.push(deck[randNumPlayerHit]);
@@ -150,14 +148,11 @@ $(function() {
       if (calculatePoints(playerCards) === 21 || (playerCards.length === 5 &&  calculatePoints(playerCards) < 21)) {
         checkBust = true;
         $("#player-points").text(calculatePoints(playerCards) + " Winner! Winner! Chicken dinner!");
-        $(".buttons").append('<button id="reset-button">Play Again?s</button>');
       } else if (calculatePoints(playerCards) > 21) {
         checkBust = true;
         $("#player-points").text(calculatePoints(playerCards) + " is over 21, doofus!");
-        $(".buttons").append('<button id="reset-button">Play Again?</button>');
       } else {
         $("#player-points").text(calculatePoints(playerCards));
-        console.log(checkBust);
       }
 
 
@@ -172,19 +167,50 @@ $(function() {
         if (calculatePoints(dealerCards) === 21 || (dealerCards.length === 5 &&  calculatePoints(dealerCards) < 21)) {
           checkBust = true;
           $("#dealer-points").text(calculatePoints(dealerCards) + " Winner! Winner! Chicken dinner!");
-          $(".buttons").append('<button id="reset-button">Play Again?</button>');
+          $("#player-points").text(calculatePoints(playerCards) + " You lost to a robot. Poor human.");
         } else if (calculatePoints(dealerCards) > 21) {
           checkBust = true;
           $("#dealer-points").text(calculatePoints(dealerCards) + " is over 21, dumb robot!");
+          $("#player-points").text(calculatePoints(playerCards) + " Winner! Winner! Chicken dinner!");
         } else {
             $("#dealer-points").text(calculatePoints(dealerCards));
-            console.log(checkBust);
         }
       }
     }
   });
+
+  $("#stand-button").click(function() {
+    checkStand = true;
+    if ((calculatePoints(dealerCards) === calculatePoints(playerCards)) || (calculatePoints(dealerCards) > calculatePoints(playerCards))) {
+      $("#dealer-points").text(calculatePoints(dealerCards) + " Winner! Winner! Chicken dinner!");
+      $("#player-points").text(calculatePoints(playerCards) + " You lost to a robot. Poor human.");
+    }
+    if (calculatePoints(dealerCards) < 18 || calculatePoints(dealerCards) < calculatePoints(playerCards)) {
+      var randNumDealerHit = Math.floor(getRandomInt(0,numOfCards));
+      $("#dealer-hand").append('<img class="card" src="' + getCardImageUrl(deck[randNumDealerHit]) + '" />');
+      dealerCards.push(deck[randNumDealerHit]);
+      deck.splice(randNumDealerHit, 1);
+      numOfCards -= 1;
+      if (calculatePoints(dealerCards) === 21 || (dealerCards.length === 5 &&  calculatePoints(dealerCards) < 21)) {
+        checkBust = true;
+        $("#dealer-points").text(calculatePoints(dealerCards) + " Winner! Winner! Chicken dinner!");
+        $("#player-points").text(calculatePoints(playerCards) + " You lost to a robot. Poor human.");
+      } else if (calculatePoints(dealerCards) > 21) {
+        checkBust = true;
+        $("#dealer-points").text(calculatePoints(dealerCards) + " is over 21, dumb robot!");
+        $("#player-points").text(calculatePoints(playerCards) + " Winner! Winner! Chicken dinner!");
+      } else {
+          $("#dealer-points").text(calculatePoints(dealerCards));
+      }
+    }
+  });
+
   $("#reset-button").click(function() {
-    "blackjack.html".reload(true);
+    $("img").remove(".card");
+    $("#dealer-points").text("");
+    $("#player-points").text("");
+    newGame();
+
   });
 
 

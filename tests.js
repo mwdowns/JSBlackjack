@@ -83,6 +83,10 @@ describe('calculatePoints', function () {
       { point: 1, suit: 'clubs' },
       { point: 1, suit: 'diamonds' }
     ])).toEqual(14);
+    expect(calculatePoints([
+      { point: 1, suit: 'spades' },
+      { point: 1, suit: 'diamonds' }
+    ])).toEqual(12);
 
   });
 
